@@ -1,32 +1,85 @@
 <script>
-    export default { 
+import axios from "axios";
 
-       // add code here
+export default {
+  data() {
+    return {
+      moods: ["Happy", "Sad", "Angry"],
+      selMood: "",
+      subject: "",
+      entry: "",
+      outputMsg: "",
+    };
+  },
 
-    }
+  computed: {
+    baseUrl() {
+      // if running locally (e.g. localhost:5173 or similar)
+      if (window.location.hostname === "localhost") {
+        return "http://localhost:3000"; // adjust if your Express server runs on a different port
+      }
+      return `${window.location.protocol}//${window.location.host}`;
+    },
+  },
+
+  methods: {
+    addPost() {
+      axios
+        .get(`${this.baseUrl}/addPost`, {
+          params: {
+            subject: this.subject,
+            entry: this.entry,
+            mood: this.selMood,
+          },
+        })
+        .then((response) => {
+          this.outputMsg = response.data.message;
+        })
+        .catch((error) => {
+          console.error(error);
+          this.outputMsg = "Error adding post.";
+        });
+    },
+  },
+};
 </script>
 
 <template>
-    <div class="table m-2">
-        <h3>Add a New Blog Post</h3>
+  <div class="table m-2">
+    <h3>Add a New Blog Post</h3>
 
-        Subject: <input type='text' size='30' v-model='subject' required>
-        <br>
-
-        Entry: <br>
-        <textarea name='entry' cols='80' rows='5' v-model='entry' required></textarea>
-        <br>
-
-        Mood:
-        <!-- TODO: Build a dropdown list here for selecting the mood -->
-
-        <br>
-
-        <br>
-        <button>Submit New Post</button>
-
-        <hr> Click  <a><router-link to="/ViewPosts/">here</router-link></a>  to return to Main Page
-       
+    <div>
+      Subject:
+      <input type="text" size="30" v-model="subject" required />
     </div>
-</template>
 
+    <div>
+      Entry:
+      <br />
+      <textarea
+        name="entry"
+        cols="80"
+        rows="5"
+        v-model="entry"
+        required
+      ></textarea>
+    </div>
+
+    <div>
+      Mood:
+      <select v-model="selMood" required>
+        <option disabled value="">-- Select mood --</option>
+        <option v-for="mood in moods" :key="mood" :value="mood">
+          {{ mood }}
+        </option>
+      </select>
+    </div>
+
+    <br />
+    <button @click="addPost">Submit New Post</button>
+    <br /><br />
+    {{ outputMsg }}
+    <hr />
+    Click <router-link to="/ViewPosts/">here</router-link> to return to Main Page
+  </div>
+</template>
